@@ -1,36 +1,25 @@
-# Sử dụng hình ảnh PHP có sẵn với phiên bản 8.1-fpm
-FROM php:8.1-fpm
+# Bắt đầu từ PHP 7.4 FPM (hoặc phiên bản khác nếu cần)
+FROM php:8.2-fpm
 
-# Cài đặt các tiện ích cần thiết
+
+# Cài đặt các extension cần thiết cho Laravel
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
-
-# Cài đặt các PHP extension cần thiết
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+    zip unzip git libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql gd
 
 # Cài đặt Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Tạo thư mục làm việc
+# Đặt thư mục làm việc
 WORKDIR /var/www
 
-# Copy toàn bộ mã nguồn vào container
-COPY . .
+# Sao chép mã nguồn Laravel
+COPY . /var/www
 
-# # Thiết lập quyền cho thư mục storage và bootstrap/cache
-# RUN chown -R www-data:www-data /var/www \
-#     && chmod -R 775 /var/www/storage \
-#     && chmod -R 775 /var/www/bootstrap/cache
+# Cài đặt các dependency của Laravel qua Composer
+RUN composer install
 
-# Expose cổng 9000 để dùng với nginx
-EXPOSE 9000
-
-CMD ["php-fpm"]
+# Phân quyền cho thư mục storage và bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
