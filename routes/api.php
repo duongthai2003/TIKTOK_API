@@ -23,39 +23,48 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::resource('users',usercontroller::class)->except(['store','login','update','destroy','show']);
-Route::post('users/login',[usercontroller::class,'login']);
-Route::group(['middleware' => 'auth:api'], function() {
-    Route::post('users/details', [usercontroller::class,'details']);
-});
 Route::post('users/register',[usercontroller::class,'store']);
-Route::post('users/update/{user}',[usercontroller::class,'update']);
-Route::delete('users/delete/{user}',[usercontroller::class,'destroy']);
+Route::post('users/login',[usercontroller::class,'login']);
+// Route::middleware('auth:api')->get('/users/test', [UserController::class, 'test']); // cái này auth cho từng cái
+Route::group(['middleware' => 'auth:api'], function() { // group này nhóm api khi đã đang nhập ms vào được 
+    Route::post('users/details', [usercontroller::class,'details']); 
+    Route::post('users/update/{user}',[usercontroller::class,'update']);
+    Route::delete('users/delete/{user}',[usercontroller::class,'destroy']);
+});
+
 Route::get('users/profile/@{nickname}',[usercontroller::class,'getanuser']);
 Route::get('users/search',[usercontroller::class,'search']);
 Route::get('suggess/users',[usercontroller::class,'suggess']);
 
 // Video
 Route::resource('videos',videocontroller::class)->only(['index','show']);
-Route::post('videos/create',[videocontroller::class,'store']);
 Route::get('search/videos',[videocontroller::class,'searchvideo']);
+Route::group(['middleware' => 'auth:api'], function() { 
+Route::post('videos/create',[videocontroller::class,'store']);
 Route::delete('delete/video',[videocontroller::class,'deleteanvideo']);
-
+});
 
 
 // comment
 Route::get('comment',[Commentcontroller::class,'index']);
+Route::group(['middleware' => 'auth:api'], function() { 
 Route::post('comment/create',[Commentcontroller::class,'store']);
 Route::delete('comment/delete',[Commentcontroller::class,'destroy']);
+});
 
 // like video
+Route::group(['middleware' => 'auth:api'], function() { 
 Route::get('like_video_list',[likecontroller::class,'index']);
 Route::post('like',[likecontroller::class,'store']);
 Route::get('like/current-user-liked-video-list',[likecontroller::class,'get_list_video_user_liked']);
+});
 
 //following
+Route::group(['middleware' => 'auth:api'], function() { 
 Route::get("me/following",[followingcontroller::class,'index']);
 Route::post("me/following",[followingcontroller::class,"store"]);
 Route::get("me/follower",[followingcontroller::class,"getfollowerlist"]);
 Route::get("me/friends",[followingcontroller::class,"friendlist"]);
 Route::get("me/following/videos",[followingcontroller::class,"followingvideolis"]);
 Route::get("me/friends/videos",[followingcontroller::class,"getvideofriend"]);
+});

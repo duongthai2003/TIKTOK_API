@@ -75,13 +75,13 @@ class usercontroller extends Controller
                 $nameImage = time() . '_' . $image->getClientOriginalName(); // dat ten cho file
 //            Storage::disk('public')->put($nameImage,File::get($image)); // de lưu file nhưng nó se luu vào tep storage muốn đổi thif phai vao file config/filesystem de cau hinh
                 $image->move('Avatar', $nameImage); //noi luu file
-                $post->avatar = 'TIKTOK_API/public/Avatar/' . $nameImage;
+                $post->avatar = 'public/Avatar/' . $nameImage;
             } else {
                 $post->avatar = "";
             }
             $request['bio'] ? $post->bio = $request->bio : $post->bio = "";
          $post->save();
-
+return "Create Success";
 
 //            return redirect()->back();
         }
@@ -139,14 +139,15 @@ class usercontroller extends Controller
         if($request->avatar){
             $img = $request->avatar;
             $imgname = time()."_".$img->getClientOriginalName();
-            $img_pach ='C:/xampp/htdocs/'. $user->avatar;  // duong dẫn đến ảnh cũ
+            
+            $img_pach =env("ROOT_DOMAIN") ."/". $user->avatar;  // duong dẫn đến ảnh cũ 
             File::delete($img_pach); // xóa ảnh cũ
             $img->move('Avatar',$imgname); // thêm ảnh mới
-            $user->avatar = 'TIKTOK_API/public/Avatar/'.$imgname;
+            $user->avatar = 'public/Avatar/'.$imgname;
         }
+            $user->update() ;
 
-        $user->update() ;
-return $user  ;
+        return $user  ;
     }
 
     /**
@@ -159,7 +160,7 @@ return $user  ;
     {
 
 
-        $img_pach ='C:/xampp/htdocs/'. $user->avatar;  // duong dẫn đến ảnh cũ
+        $img_pach =env("ROOT_DOMAIN") ."/". $user->avatar;  // duong dẫn đến ảnh cũ
         File::delete($img_pach); // xóa ảnh cũ
         $user->delete();
     }
@@ -212,10 +213,7 @@ return $user  ;
         ]);
     }
 
-//    public function searchuser (){
-//        $as =  User::paginate();
-//        return $as;
-//    }
+ 
     public function search(Request $request)
     {
         $value =$request->q;
@@ -225,6 +223,7 @@ return $user  ;
 
         return $user;
     }
+
     public function suggess(Request $request){
         $a=$request->page;
         $user = DB::table('users')->take($a*5)->get();

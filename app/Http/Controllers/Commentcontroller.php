@@ -51,7 +51,7 @@ class Commentcontroller extends Controller
 
             DB::table('videos')->where("id",$request->videoid)->update(['comment_count' => $comment_count_of_a_video] );
 
-//            DB::table('comment')->truncate(); // xóa hết dl cua csdl
+ 
         }else{
             return ;
         }
@@ -99,10 +99,10 @@ class Commentcontroller extends Controller
      */
     public function destroy(Request $request)
     {
-        $comment = DB::table('comment')->where([
+         DB::table('comment')->where([
             ['id',$request->id_Comment],
             ['user_id',$request->id_user]
         ])->delete();
-        return $comment;
+        return "Delete success";
     }
 }

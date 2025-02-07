@@ -51,8 +51,9 @@ class likecontroller extends Controller
             $check_liked = DB::table("like_video")->where([['video_id',$video_id],['user_id',$user_id]])->get();
 
             if(count($check_liked)>0){
-//                DB::table('like_video')->truncate(); // xóa toàn bộ dl bảng và rết lại id tự tăng
+ 
                 DB::table("like_video")->where([['video_id',$video_id],['user_id',$user_id]])->delete();
+             
             // nếu trong csdl người dùng này dẫ like thi sẽ xoas no ik
             }else{
 // nếu chx tung like thì sẽ luu vai]o csdl

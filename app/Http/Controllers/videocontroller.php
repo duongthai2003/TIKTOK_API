@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Pawlox\VideoThumbnail\VideoThumbnail;
-
+use Illuminate\Support\Facades\Auth;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 class videocontroller extends Controller
 {
 
@@ -21,12 +22,13 @@ class videocontroller extends Controller
         $page = $request->page;
       $data = Video::with(['user','comment'])->orderBy('id','DESC')->take($page*10)->get();
      //with(['user','comment']  lien ket 2 bang thi viet nhu nay
-
-
+     
+  
         return response([
             'data'=>$data
 
         ]);
+ 
     }
 
     /**
@@ -48,43 +50,42 @@ class videocontroller extends Controller
 
     public function store(Request $request)
     {
-
+        $currentUser = Auth::user();
         $request->validate([
-            'file_url'=>"required|mimes:mp4",
-//            'thumnailvideo'=>"required|mimes:jpg,png,jpeg"
+            'file_url'=>"required|mimes:mp4|max:10240", 
+        ]); 
+
+         // cai nay luu vao file public cua project
+        //  $video = $request['file_url']; 
+        //     $format = $video->getClientOriginalExtension();
+        //     $name = time().'_'.$video->getClientOriginalName();
+        //  $video->move('Video',"$name");
+       ///////////////////
+
+        $video = $request['file_url'];
+        $format = $video->getClientOriginalExtension();
+  //    Tải video lên Cloudinary
+        $uploadedFile = Cloudinary::uploadVideo($video->getRealPath(), [
+            "resource_type" => "video",
+            "folder" => "Video" 
         ]);
+ 
+        $videoUrl = $uploadedFile->getSecurePath();
+        $publicId = $uploadedFile->getPublicId();
+        $cloudName = env("CLOUDINARY_NAME"); 
+        $snapshot_time = $request['snapshot_time']; // Giây muốn chụp ảnh
+        $snapshotUrl = "https://res.cloudinary.com/$cloudName/video/upload/so_{$snapshot_time}/$publicId.jpg";// Tạo URL ảnh snapshot từ video
 
-           $post = new Video();
-         $request['description']? $post->description = $request->description :$post->description ="";
-         $request['music']? $post->music = $request->music: $post->music ="";
-         $post->user_id = $request->user_id;
-
-         $video = $request['file_url'];
-
-            $format = $video->getClientOriginalExtension();
-            $name = time().'_'.$video->getClientOriginalName();
-         $video->move('Video',"$name");
-            $post->file_url='TIKTOK_API/public/Video/'.$name;
-            $post->file_format=$format;
-
-//             $request['thumnailvideosecond']; : giay chup anh
-
-//         $img = $request['thumnailvideo'];
-////        $img_format = $img->getClientOriginalExtension();
-////         $nameimg = "thumnail_". substr($name,0,-4).'.jpg';//.$img_format;//substr : cat chuoi
-//        $nameimg = "thumnail_thai.jpg" ;
-//
-//                $img->move("Thumnailvideo", "$nameimg");
-// //        $post->img_url='TIKTOK_API/public/Thumnailvideo/'.$nameimg;
-
-
-
-
-
-         $post->save();
-
-//         return redirect()->back();
-
+        $post = new Video();
+        $request['description']? $post->description = $request->description :$post->description ="";
+        $request['music']? $post->music = $request->music: $post->music ="";
+        $post->user_id = $currentUser->id;
+        $post->file_url= $videoUrl;
+        $post->img_url= $snapshotUrl;
+        $post->file_format=$format;
+   
+          $post->save();
+            return $post;  
     }
 
     /**
@@ -94,7 +95,7 @@ class videocontroller extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
+    { 
 //        $video = Video::with(['user','comment'])->where('id',$id)->get();
         $video = Video::with('user')->where('id',$id)->get();
         $iduser = $video[0]['user']['id']; // lay ra user_id
@@ -149,20 +150,22 @@ class videocontroller extends Controller
     }
 
     public  function deleteanvideo(Request $request){
-//        $id_user = $request->iduser;
-//        $id_video =$request->idvideo;
-//        $fileurl = Video::find($id_video)->file_url;
-//        $filepath = 'C:/xampp/htdocs/'.$fileurl ;
-//        File::delete($filepath);//xoa video trong file
-//        DB::table('videos')->where([['id',$id_video],['user_id',$id_user]])->delete();//xóa vdieo ở csdl
-//        DB::table('like_video')->where("video_id",$id_video)->delete(); // xoa like
-//        DB::table('comment')->where("video_id",$id_video)->delete(); // xóa comment của video
+       $id_user = $request->iduser;
+       $id_video =$request->idvideo;
+       $fileurl = Video::find($id_video)->file_url;
+       $filepath =  env("ROOT_DOMAIN") ."/".$fileurl ;
+      
+       File::delete($filepath);//xoa video trong file
+       DB::table('videos')->where([['id',$id_video],['user_id',$id_user]])->delete();//xóa vdieo ở csdl
+       DB::table('like_video')->where("video_id",$id_video)->delete(); // xoa like
+       DB::table('comment')->where("video_id",$id_video)->delete(); // xóa comment của video
 
 
-        $file_path = public_path("Video/"."thaiduong.mp4");
-        unlink($file_path);
+        // $file_path = public_path("Video/"."thaiduong.mp4");
+    
+        // unlink($file_path);
 
-        return $file_path;
+        return "Delete success";
 
     }
 
