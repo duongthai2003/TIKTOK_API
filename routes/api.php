@@ -29,8 +29,8 @@ Route::post('users/login',[usercontroller::class,'login']);
 Route::group(['middleware' => 'auth:api'], function() { // group này nhóm api khi đã đang nhập ms vào được 
     Route::post('users/details', [usercontroller::class,'details']); 
     Route::delete('users/delete/{user}',[usercontroller::class,'destroy']);
+    Route::post('users/update/{user}',[usercontroller::class,'update']);
 });
-Route::post('users/update/{user}',[usercontroller::class,'update']);
 
 Route::get('users/profile/@{nickname}',[usercontroller::class,'getanuser']);
 Route::get('users/search',[usercontroller::class,'search']);
