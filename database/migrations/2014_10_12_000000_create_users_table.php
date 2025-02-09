@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('avatar')->default(" ");
+            $table->string ('public_id_avatar')->default(NULL);
             $table->string('tick')->default("false");
             $table->string('bio')->default("");
             $table->integer('like_counts')->default(0);
