@@ -1,0 +1,38 @@
+{
+    "authHost": "http://tiktokApi-clone",
+    "authEndpoint": "/broadcasting/auth",
+    "clients": [
+        {
+            "appId": "3b43d7e0686d0948",
+            "key": "f593fe7cec42a7a3b01c854f93ef229d"
+        }
+    ],
+    "database": "redis",
+    "databaseConfig": {
+        "redis": { "host": "192.168.22.14", "port": "6379" },
+        "sqlite": {
+            "databasePath": "/database/laravel-echo-server.sqlite"
+        }
+    },
+    "devMode": false,
+    "host": null,
+    "port": "6001",
+    "protocol": "http",
+    "socketio": {},
+    "secureOptions": 67108864,
+    "sslCertPath": "",
+    "sslKeyPath": "",
+    "sslCertChainPath": "",
+    "sslPassphrase": "",
+    "subscribers": {
+        "http": true,
+        "redis": true
+    },
+    "apiOriginAllow": {
+        "allowCors": true,
+        "allowOrigin": "*",
+        // "https://tik-tok-delta-five.vercel.app,http://localhost:3000",
+        "allowMethods": "GET, POST",
+        "allowHeaders": "Origin, Content-Type, X-Auth-Token, X-Requested-With, Accept, Authorization, X-CSRF-TOKEN, X-Socket-Id"
+    }
+}
