@@ -6,8 +6,9 @@ use App\Http\Controllers\usercontroller;
 use App\Http\Controllers\videocontroller;
 use App\Http\Controllers\Commentcontroller;
 use App\Http\Controllers\likecontroller;
-use App\Http\Controllers\followingcontroller;
-use App\Models\Following;
+use App\Http\Controllers\followingcontroller; 
+use App\Http\Controllers\MessageController; 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -68,4 +69,10 @@ Route::get("me/follower",[followingcontroller::class,"getfollowerlist"]);
 Route::get("me/friends",[followingcontroller::class,"friendlist"]);
 Route::get("me/following/videos",[followingcontroller::class,"followingvideolis"]);
 Route::get("me/friends/videos",[followingcontroller::class,"getvideofriend"]);
+});
+
+// messages
+Route::middleware('auth:api')->group(function () {
+    Route::post('/messages/send', [MessageController::class, 'sendMessage']);
+    Route::get('/messages/{userId}', [MessageController::class, 'getMessages']);
 });
