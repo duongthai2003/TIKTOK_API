@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Api\Upload\UploadApi;
+use Cloudinary\Configuration\Configuration;
 
 
 class usercontroller extends Controller
@@ -43,12 +46,7 @@ class usercontroller extends Controller
      */
     public function store(Request $request)
     {
-//        $validator= $request->validate([
-//           'name'=>"required",
-//           'nickname'=>"required",
-//           'email'=>"required|unique:users",
-//           'password'=>"required"
-//       ]);
+ 
         $validator = Validator::make($request->all(),[
             'name'=>"required",
            'nickname'=>"required",
@@ -65,25 +63,35 @@ class usercontroller extends Controller
             $post->email = $request->email;
             $post->password = bcrypt($request['password']);
 
-            if ($request['avatar']) {
-                $request->validate([
+            if ($request['avatar']) { 
+                $validator2 = Validator::make($request->all(),[ 
                     'avatar' => "mimes:jpeg,png,bmp,tiff,jpg"
                 ]);
+                if ($validator2->fails())   return $validator2->errors();;
+                    
+            
+ 
+//                 $image = $request['avatar'];
+//                 $imageformat = $image->getClientOriginalExtension(); // lay ra duoi cua file da chon
+//                 $nameImage = time() . '_' . $image->getClientOriginalName(); // dat ten cho file
+// //            Storage::disk('public')->put($nameImage,File::get($image)); // de lưu file nhưng nó se luu vào tep storage muốn đổi thif phai vao file config/filesystem de cau hinh
+//                 $image->move('Avatar', $nameImage); //noi luu file 
 
-                $image = $request['avatar'];
-                $imageformat = $image->getClientOriginalExtension(); // lay ra duoi cua file da chon
-                $nameImage = time() . '_' . $image->getClientOriginalName(); // dat ten cho file
-//            Storage::disk('public')->put($nameImage,File::get($image)); // de lưu file nhưng nó se luu vào tep storage muốn đổi thif phai vao file config/filesystem de cau hinh
-                $image->move('Avatar', $nameImage); //noi luu file
-                $post->avatar = 'public/Avatar/' . $nameImage;
+            $image = $request['avatar'];
+            $uploadedFile = Cloudinary::upload($image->getRealPath(), [
+                "folder" => "Avatar"
+            ]);
+            $videoUrl = $uploadedFile->getSecurePath();
+            $publicId = $uploadedFile->getPublicId();
+            $post->avatar = $videoUrl;
+            $post->public_id_avatar=$publicId ;
+
             } else {
-                $post->avatar = "";
+                $post->avatar = "";  
             }
             $request['bio'] ? $post->bio = $request->bio : $post->bio = "";
-         $post->save();
-return "Create Success";
-
-//            return redirect()->back();
+            $post->save();
+            return "Create Success"; 
         }
 
 
@@ -122,28 +130,37 @@ return "Create Success";
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request,User $user)
-    {
-
-//        $request->validate([
-//            'name'=>"required",
-//            'nickname'=>"required",
-//            'email'=>"required"
-//
-//        ]);
-
+    { 
         $user->name = $request->name ;
         $user->nickname = $request->nickname;
-//        $user->email = $request->email ;
-        $user->bio = $request->bio ;
+    //    $user->email = $request->email ;
+        $user->bio = $request->bio ; 
 
         if($request->avatar){
-            $img = $request->avatar;
-            $imgname = time()."_".$img->getClientOriginalName();
-            
-            $img_pach =env("ROOT_DOMAIN") ."/". $user->avatar;  // duong dẫn đến ảnh cũ 
-            File::delete($img_pach); // xóa ảnh cũ
-            $img->move('Avatar',$imgname); // thêm ảnh mới
-            $user->avatar = 'public/Avatar/'.$imgname;
+            $validatorfile = Validator::make($request->all(),[ 
+                'avatar' => "mimes:jpeg,png,bmp,tiff,jpg"
+            ]);
+            if ($validatorfile->fails())   return $validatorfile->errors();;
+
+            $imgFile = $request->avatar; 
+            try{
+                $publicIdOldAvatar = $user->public_id_avatar; 
+                //xoa anh cu
+                 (new UploadApi())->destroy($publicIdOldAvatar, [
+                    'resource_type' => 'image', 
+                ]);
+                // them
+                $uploadedFile = Cloudinary::upload($imgFile->getRealPath(), [
+                    "folder" => "Avatar"
+                ]);
+                $videoUrl = $uploadedFile->getSecurePath();
+                $publicId = $uploadedFile->getPublicId();
+                $user->avatar = $videoUrl;
+                $user->public_id_avatar=$publicId ;
+               
+            } catch (Exception $e) {
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
         }
             $user->update() ;
 
@@ -158,11 +175,13 @@ return "Create Success";
      */
     public function destroy(User $user)
     {
+$publicIdOldAvatar = $user->public_id_avatar;
 
-
-        $img_pach =env("ROOT_DOMAIN") ."/". $user->avatar;  // duong dẫn đến ảnh cũ
-        File::delete($img_pach); // xóa ảnh cũ
+        (new UploadApi())->destroy($publicIdOldAvatar, [
+            'resource_type' => 'image', 
+        ]);
         $user->delete();
+        return " Delete success";
     }
 
     public function login()

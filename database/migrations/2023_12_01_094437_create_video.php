@@ -24,6 +24,7 @@ class CreateVideo extends Migration
             $table->integer ('comment_count')->default(0);
             $table->integer ('share_count')->default(0);
             $table->bigInteger ('user_id');
+            $table->string ('public_id_video');
             $table->timestamps();
         });
     }

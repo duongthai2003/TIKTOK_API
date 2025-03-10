@@ -28,8 +28,8 @@ Route::post('users/login',[usercontroller::class,'login']);
 // Route::middleware('auth:api')->get('/users/test', [UserController::class, 'test']); // cái này auth cho từng cái
 Route::group(['middleware' => 'auth:api'], function() { // group này nhóm api khi đã đang nhập ms vào được 
     Route::post('users/details', [usercontroller::class,'details']); 
-    Route::post('users/update/{user}',[usercontroller::class,'update']);
     Route::delete('users/delete/{user}',[usercontroller::class,'destroy']);
+    Route::post('users/update/{user}',[usercontroller::class,'update']);
 });
 
 Route::get('users/profile/@{nickname}',[usercontroller::class,'getanuser']);
@@ -43,6 +43,7 @@ Route::group(['middleware' => 'auth:api'], function() {
 Route::post('videos/create',[videocontroller::class,'store']);
 Route::delete('delete/video',[videocontroller::class,'deleteanvideo']);
 });
+Route::post('videos/update/{video}',[videocontroller::class,'update']);
 
 
 // comment
