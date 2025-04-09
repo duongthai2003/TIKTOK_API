@@ -90,16 +90,7 @@ return $users;
                             ->where("user_id", $userid)))->get();
             return $video;
 
-//        SELECT videos.*
-//FROM videos
-//WHERE videos.user_id IN(
-//        SELECT users.id
-//  FROM users JOIN following ON users.id = following.user_id
-//  WHERE following_user_id = 5 AND  user_id IN(
-//        SELECT following_user_id
-//  FROM following
-//  WHERE user_id =5))
-//  ORDER BY id DESC
+ 
 
 
         }else{

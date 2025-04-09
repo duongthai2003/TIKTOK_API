@@ -35,7 +35,9 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new PrivateChannel('chat.' . $this->message->receiver_id); // có auth
+        $users = [$this->message->sender_id, $this->message->receiver_id];
+        sort($users);  
+        return new PrivateChannel('chat.' . implode('_', $users)); // có auth
         // return new Channel('channel-name'); // không cần auth
     }
     public function broadcastAs()

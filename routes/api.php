@@ -8,6 +8,7 @@ use App\Http\Controllers\Commentcontroller;
 use App\Http\Controllers\likecontroller;
 use App\Http\Controllers\followingcontroller; 
 use App\Http\Controllers\MessageController; 
+use App\Http\Controllers\GroupChatsController; 
 
 /*
 |--------------------------------------------------------------------------
@@ -74,5 +75,10 @@ Route::get("me/friends/videos",[followingcontroller::class,"getvideofriend"]);
 // messages
 Route::middleware('auth:api')->group(function () {
     Route::post('/messages/send', [MessageController::class, 'sendMessage']);
-    Route::get('/messages/{userId}', [MessageController::class, 'getMessages']);
+    Route::get('/messages/getListMessages/{userId}', [MessageController::class, 'getMessages']);
+    Route::get('/messages/list-users', [MessageController::class, 'getUserMessageList']);
+});
+
+Route::middleware('auth:api')->group(function () {
+    Route::post('/group-chat/create-group', [GroupChatsController::class, 'createGroupChat']); 
 });
